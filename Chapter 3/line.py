@@ -157,3 +157,5 @@ line1 = Line(Vector([1.182, 5.562]), 6.744)
 line2 = Line(Vector([1.773, 8.343]), 9.525)
 print_output(line1,line2)
 
+print "\n#4"
+
