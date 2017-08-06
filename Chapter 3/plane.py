@@ -1,6 +1,6 @@
 from decimal import Decimal, getcontext
 
-from Vector1 import Vector
+from vector import Vector
 
 getcontext().prec = 30
 
@@ -88,6 +88,16 @@ class Plane(object):
 
         return output
 
+    def is_parallel_to(self,p2):
+        return self.normal_vector.is_parallel_to(p2.normal_vector)
+
+    def __eq__(self, other):
+        if not self.is_parallel_to(other):
+            return False
+        else:
+            v = self.basepoint.minus(other.basepoint)
+            return self.normal_vector.is_orthogonal_to(v)
+
 
     @staticmethod
     def first_nonzero_index(iterable):
@@ -100,3 +110,29 @@ class Plane(object):
 class MyDecimal(Decimal):
     def is_near_zero(self, eps=1e-10):
         return abs(self) < eps
+
+def information_output(p1,p2):
+    print "Plane1", p1, "\n", "Plane2", p2
+    print "Plane1 parallel to Plane2: ", p1.is_parallel_to(p2)
+    print "Plane1 equal Plane2: ", p1 == p2
+
+print "\n#1"
+v1 = Vector([-0.412,3.806,0.728])
+plane1 = Plane(v1,-3.46)
+v2 = Vector([1.03,-9.515,-1.82])
+plane2 = Plane(v2,8.65)
+information_output(plane1,plane2)
+
+print "\n#2"
+v1 = Vector([2.611,5.528,0.283])
+v2 = Vector([7.715,8.306,5.342])
+plane1 = Plane(v1,4.6)
+plane2 = Plane(v2,3.76)
+information_output(plane1,plane2)
+
+print "\n#3"
+v1 = Vector([-7.926,8.625,-7.212])
+v2 = Vector([-2.642,2.875,-2.404])
+plane1 = Plane(v1,-7.952)
+plane2 = Plane(v2,-2.443)
+information_output(plane1,plane2)
