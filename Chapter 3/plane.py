@@ -116,23 +116,23 @@ def information_output(p1,p2):
     print "Plane1 parallel to Plane2: ", p1.is_parallel_to(p2)
     print "Plane1 equal Plane2: ", p1 == p2
 
-print "\n#1"
-v1 = Vector([-0.412,3.806,0.728])
-plane1 = Plane(v1,-3.46)
-v2 = Vector([1.03,-9.515,-1.82])
-plane2 = Plane(v2,8.65)
-information_output(plane1,plane2)
-
-print "\n#2"
-v1 = Vector([2.611,5.528,0.283])
-v2 = Vector([7.715,8.306,5.342])
-plane1 = Plane(v1,4.6)
-plane2 = Plane(v2,3.76)
-information_output(plane1,plane2)
-
-print "\n#3"
-v1 = Vector([-7.926,8.625,-7.212])
-v2 = Vector([-2.642,2.875,-2.404])
-plane1 = Plane(v1,-7.952)
-plane2 = Plane(v2,-2.443)
-information_output(plane1,plane2)
+# print "\n#1"
+# v1 = Vector([-0.412,3.806,0.728])
+# plane1 = Plane(v1,-3.46)
+# v2 = Vector([1.03,-9.515,-1.82])
+# plane2 = Plane(v2,8.65)
+# information_output(plane1,plane2)
+#
+# print "\n#2"
+# v1 = Vector([2.611,5.528,0.283])
+# v2 = Vector([7.715,8.306,5.342])
+# plane1 = Plane(v1,4.6)
+# plane2 = Plane(v2,3.76)
+# information_output(plane1,plane2)
+#
+# print "\n#3"
+# v1 = Vector([-7.926,8.625,-7.212])
+# v2 = Vector([-2.642,2.875,-2.404])
+# plane1 = Plane(v1,-7.952)
+# plane2 = Plane(v2,-2.443)
+# information_output(plane1,plane2)
