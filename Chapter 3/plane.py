@@ -1,16 +1,16 @@
 from decimal import Decimal, getcontext
 
-from Vector1 import Vector
+from vector import Vector
 
 getcontext().prec = 30
 
 
-class Line(object):
+class Plane(object):
 
     NO_NONZERO_ELTS_FOUND_MSG = 'No nonzero elements found'
 
     def __init__(self, normal_vector=None, constant_term=None):
-        self.dimension = 2
+        self.dimension = 3
 
         if not normal_vector:
             all_zeros = ['0']*self.dimension
@@ -30,14 +30,14 @@ class Line(object):
             c = self.constant_term
             basepoint_coords = ['0']*self.dimension
 
-            initial_index = Line.first_nonzero_index(n)
+            initial_index = Plane.first_nonzero_index(n)
             initial_coefficient = n[initial_index]
 
-            basepoint_coords[initial_index] = c/Decimal(initial_coefficient)
+            basepoint_coords[initial_index] = c/initial_coefficient
             self.basepoint = Vector(basepoint_coords)
 
         except Exception as e:
-            if str(e) == Line.NO_NONZERO_ELTS_FOUND_MSG:
+            if str(e) == Plane.NO_NONZERO_ELTS_FOUND_MSG:
                 self.basepoint = None
             else:
                 raise e
@@ -70,7 +70,7 @@ class Line(object):
         n = self.normal_vector
 
         try:
-            initial_index = Line.first_nonzero_index(n)
+            initial_index = Plane.first_nonzero_index(n)
             terms = [write_coefficient(n[i], is_initial_term=(i==initial_index)) + 'x_{}'.format(i+1)
                      for i in range(self.dimension) if round(n[i], num_decimal_places) != 0]
             output = ' '.join(terms)
@@ -88,74 +88,51 @@ class Line(object):
 
         return output
 
+    def is_parallel_to(self,p2):
+        return self.normal_vector.is_parallel_to(p2.normal_vector)
+
+    def __eq__(self, other):
+        if not self.is_parallel_to(other):
+            return False
+        else:
+            v = self.basepoint.minus(other.basepoint)
+            return self.normal_vector.is_orthogonal_to(v)
+
 
     @staticmethod
     def first_nonzero_index(iterable):
         for k, item in enumerate(iterable):
             if not MyDecimal(item).is_near_zero():
                 return k
-        raise Exception(Line.NO_NONZERO_ELTS_FOUND_MSG)
-
-    def is_parallel_to(self, l):
-        p = Vector([l.normal_vector[1],-l.normal_vector[0]])
-        # print self.normal_vector.dot(p)
-        return self.normal_vector.is_parallel_to(l.normal_vector)
-
-    def is_equal_to(self, l):
-        if self.is_parallel_to(l):
-            u = self.basepoint.minus(l.basepoint)
-            return u.is_orthogonal_to(self.normal_vector)
-        else:
-            return False
-
-    def intersection_with(self, l):
-        if self.is_parallel_to(l):
-            if self.is_equal_to(l):
-                raise Exception("Lines are equal, have unlimited intersections")
-            else:
-                raise Exception("Lines are parallel have no intersection")
-        else:
-            a, b, k1 = self.normal_vector[0], self.normal_vector[1], self.constant_term
-            c, d, k2 = l.normal_vector[0], l.normal_vector[1], l.constant_term
-            intersection = ['0'] * self.dimension
-            if a == 0:
-                a, b, k1, c, d, k2 = c, d, k2, a, b, k1
-            intersection[0] = Decimal(d * k1 - b * k2)/ Decimal(a * d - b * c)
-            intersection[1] = Decimal(a * k2 - c * k1)/ Decimal(a * d - b * c)
-            return Vector(intersection)
-
-
-
+        raise Exception(Plane.NO_NONZERO_ELTS_FOUND_MSG)
 
 
 class MyDecimal(Decimal):
     def is_near_zero(self, eps=1e-10):
         return abs(self) < eps
 
-def print_output(l1,l2):
-    try:
-        print l1
-        print l2
-        print "intersection: {}".format(l1.intersection_with(l2))
-    except Exception as e:
-        print e
+def information_output(p1,p2):
+    print "Plane1", p1, "\n", "Plane2", p2
+    print "Plane1 parallel to Plane2: ", p1.is_parallel_to(p2)
+    print "Plane1 equal Plane2: ", p1 == p2
 
-print "\n#1"
-line1 = Line(Vector([4.046,2.836]), 1.21)
-line2 = Line(Vector([10.115,7.09]), 3.025)
-
-print_output(line1,line2)
-
-
-print "\n#2"
-line1 = Line(Vector([7.204, 3.182]), 8.68)
-line2 = Line(Vector([8.172, 4.114]), 9.883)
-print_output(line1,line2)
-
-print "\n#3"
-line1 = Line(Vector([1.182, 5.562]), 6.744)
-line2 = Line(Vector([1.773, 8.343]), 9.525)
-print_output(line1,line2)
-
-print "\n#4"
-
+# print "\n#1"
+# v1 = Vector([-0.412,3.806,0.728])
+# plane1 = Plane(v1,-3.46)
+# v2 = Vector([1.03,-9.515,-1.82])
+# plane2 = Plane(v2,8.65)
+# information_output(plane1,plane2)
+#
+# print "\n#2"
+# v1 = Vector([2.611,5.528,0.283])
+# v2 = Vector([7.715,8.306,5.342])
+# plane1 = Plane(v1,4.6)
+# plane2 = Plane(v2,3.76)
+# information_output(plane1,plane2)
+#
+# print "\n#3"
+# v1 = Vector([-7.926,8.625,-7.212])
+# v2 = Vector([-2.642,2.875,-2.404])
+# plane1 = Plane(v1,-7.952)
+# plane2 = Plane(v2,-2.443)
+# information_output(plane1,plane2)

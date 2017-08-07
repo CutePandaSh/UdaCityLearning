@@ -1,200 +1,149 @@
-#!/usr/bin/env python2
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Jul 11 18:22:18 2017
-
-@author: denniswang
-"""
 import math
-from decimal import Decimal, getcontext
+from decimal import Decimal,getcontext
 
 getcontext().prec = 30
 
-class Vector1():
-    
+
+class Vector:
+    TOLERANCE=1e-10
+
     CANNOT_NORMALIZE_ZERO_VECTOR_MSG = "Cannot normalize the zero vector"
-    def __init__(self,coordination):
+
+    def __init__(self, coordination):
         try:
             if not coordination:
                 raise ValueError
-            self.coordination = tuple([Decimal(x) for x in coordination])
-            self.dimension = len(self.coordination)
-            
+            self.coordination = tuple(Decimal(x) for x in coordination)
+            self.dimension = len(coordination)
+            self.start = 0
         except ValueError:
-            raise ValueError("The coordinates must be nonempty")
-        
-        
+            raise ValueError("Coordination must be nonempty")
+
     def __str__(self):
         return "Vector: {}".format(self.coordination)
-    
-    def __eq__(self,v):
-        return self.coordination == v.coordination
-    
+
+    def __eq__(self, other):
+        return self.coordination == other.coordination
+
+    def __iter__(self):
+        return self
+
+    def next(self):
+        if self.start < self.dimension:
+            i = self.start
+            self.start += 1
+            return self.coordination[i]
+        else:
+            raise StopIteration
+
+    def __getitem__(self, item):
+        return  self.coordination[item]
+
+    def __setitem__(self, key, value):
+        self.coordination[key] = value
+
     def plus(self, v):
-        new_coordination = [x+y for x,y in zip(self.coordination,v.coordination)]
-        return Vector1(new_coordination)
-    
-    def minus(self,v):
-        new_coordination = [x-y for x,y in zip(self.coordination,v.coordination)]
-        return Vector1(new_coordination)
-    
-    def times_scalar(self,c):
-        new_coordination = [Decimal(c)*x for x in self.coordination]
-        return Vector1(new_coordination)
-    
+        new = [x + y for x, y in zip(self.coordination, v.coordination)]
+        return Vector(new)
+
+    def minus(self, v):
+        new = [x - y for x, y in zip(self.coordination, v.coordination)]
+        return Vector(new)
+
+    def time_scalar(self, n):
+        new = [Decimal(n) * x for x in self.coordination]
+        return Vector(new)
+
     def magnitude(self):
-        coordinates_squared = [x ** 2 for x in self.coordination]
-        return Decimal(math.sqrt(sum(coordinates_squared)))
-    
+        c_squarded = [x ** 2 for x in self.coordination]
+        return Decimal(math.sqrt(sum(c_squarded)))
+
     def normalized(self):
-        maginitude = self.magnitude()
-        
+        magnitude = self.magnitude()
         try:
-            return self.times_scalar(Decimal('1.0')/maginitude)
+            return self.time_scalar(Decimal(1.0)/magnitude)
         except ZeroDivisionError:
-            raise Exception(self.CANNOT_NORMALIZE_ZERO_VECTOR_MSG)
-            
-    def dot_product(self,v):
-        new_coordinates = [x*y for x,y in zip(self.coordination, v.coordination)]
-        return sum(new_coordinates)
-    
-    def angle_with(self,v,in_degree=False):
+            raise Exception("ZeroVector can not be normalized")
+
+    def dot(self, v):
+        new = [x * y for x, y in zip(self.coordination, v.coordination)]
+        return Decimal(sum(new))
+
+    def angel_with(self, v, in_degree=False):
         try:
             u1 = self.normalized()
             u2 = v.normalized()
-            angle_in_radius = math.acos(u1.dot_product(u2))
+            angel_with = math.acos(u1.dot(u2))
             if in_degree:
-                return angle_in_radius * 180. / math.pi
+                return angel_with * 180. / math.pi
             else:
-                return angle_in_radius
-        
+                return angel_with
         except Exception as e:
             if str(e) == self.CANNOT_NORMALIZE_ZERO_VECTOR_MSG:
-                raise Exception('Can not compute an angle with the zero vector')
+                raise Exception("Can not compute an angel with Zero Vector")
             else:
                 raise e
-    
-    def parallelism_Orthogonality(self,v,tolerance = 1e-10):
-        print ""
-        #s_magnitude = self.magnitude()
-#        v_magnitude = v.magnitude()
-#        dot_product = self.dot_product(v)
-#        try:
-#            return math.acos(dot_product/(s_magnitude * v_magnitude))
-#        except ZeroDivisionError:
-#            raise Exception("Zero Vector have no angle")
-    def is_orthogonal_to(self,v,tolerance=1e-10):
-        return abs(self.dot_product(v)) < tolerance
-    
-    def is_zero_vector(self,tolerance=1e-10):
-        return self.magnitude() < tolerance
-    
-    def is_parallel_to(self,v):
-        return (self.is_zero_vector or v.is_zero_vector or 
-                self.angle_with(v) == 0 or 
-                self.angle_with(v) == pi)
-        
-    def projection_to(self,v):
+
+    def is_zero_vector(self):
+        if self.magnitude() < self.TOLERANCE:
+            return True
+        else:
+            return False
+
+    def is_orthogonal_to(self, v):
+        return abs(self.dot(v)) <= self.TOLERANCE
+
+    def is_parallel_to(self, v):
+        result = self.is_zero_vector() or v.is_zero_vector() or abs(self.angel_with(v)) <= 1e-3 or self.angel_with(v) == math.pi
+        return result
+
+    def projection_to(self, v):
         try:
             u = v.normalized()
-            return u.times_scalar(self.dot_product(u))
+            return u.time_scalar(self.dot(u))
         except Exception as e:
             raise e
-    
-    def orthogonality_to(self,v):
+
+    def orthogonal_to(self, v):
         try:
-            proj = self.projection_to(v)
-            return self.minus(proj)
+            u = self.projection_to(v)
+            return self.minus(u)
         except Exception as e:
             raise e
-    
-    def cross(self,v):
-        result = []
-        result.append(self.coordination[1]*v.coordination[2]-self.coordination[2]*v.coordination[1])
-        result.append(-(self.coordination[0]*v.coordination[2]-self.coordination[2]*v.coordination[0]))
-        result.append(self.coordination[0]*v.coordination[1]-self.coordination[1]*v.coordination[0])
-        return Vector1(result)
-    
-v = Vector1([8.218,-9.341])
-w = Vector1([-1.129,2.111])
-print v.plus(w)
 
-v = Vector1([7.119,8.215])
-w = Vector1([-8.223,0.878])
-print v.minus(w)
+    def cross(self, v):
+        if len(self.coordination) > 3 or len(v.coordination) > 3:
+            raise Exception("Can not compute the cross of vectors whose dimension ise bigger than 3")
+        else:
+            u1 = self.get_three_dimension_vector()
+            u2 = v.get_three_dimension_vector()
+            new = []
+            new.append(u1[1] * u2[2] - u1[2] * u2[1])
+            new.append(-(u1[0] * u2[2] - u1[2] * u2[0]))
+            new.append(u1[0]*u2[1] - u1[1] * u2[0])
+            return Vector(new)
 
-v = Vector1([1.671,-1.012,-0.318])
-c = 7.41
-print v.times_scalar(c)
 
-v = Vector1([-0.221,7.437])
-print round(v.magnitude(),4)
+    def get_three_dimension_vector(self):
+        u = []
+        for i in self.coordination:
+            u.append(i)
+        while len(u) < 3:
+            u.append(0)
+        return u
 
-v = Vector1([8.813,-1.331,-6.247])
-print round(v.magnitude(),4)
 
-v = Vector1([5.581,-2.136])
-print v.normalized()
-
-v = Vector1([1.996,3.108,-4.554])
-print v.normalized()
-
-v = Vector1([7.887,4.138])
-w = Vector1([-8.802,6.776])
-print v.dot_product(w)
-
-v = Vector1([3.183,-7.627])
-w = Vector1([-2.668,5.319])
-print v.angle_with(w)
-
-v = Vector1([-5.955,-4.904,-1.874])
-w = Vector1([-4.496,-8.755,7.103])
-print v.dot_product(w)
-
-v = Vector1([7.35,0.221,5.188])
-w = Vector1([2.751,8.259,3.985])
-print v.angle_with(w) * 180 / math.pi
-
-v = Vector1([-7.579,-7.88])
-w = Vector1([22.737,23.64])
-print v.parallelism_Orthogonality(w)
-
-v = Vector1([-2.029,9.97,4.172])
-w = Vector1([-9.231,-6.639,-7.245])
-print v.parallelism_Orthogonality(w)
-
-v = Vector1([-2.328,-7.284,-1.214])
-w = Vector1([-1.821,1.072,-2.94])
-print v.parallelism_Orthogonality(w)
-
-v = Vector1([2.118,4.827])
-w = Vector1([0,0])
-print v.parallelism_Orthogonality(w)
-
-v = Vector1([3.039,1.879])
-b = Vector1([0.825,2.036])
-print v.projection_to(b)
-
-v = Vector1([-9.88,-3.264,-8.159])
-b = Vector1([-2.155,-9.353,-9.473])
-print v.orthogonality_to(b)
-
-v = Vector1([3.009,-6.172,3.692,-2.51])
-b = Vector1([6.404,-9.144,2.759,8.718])
-print  v.projection_to(b)
-print  v.orthogonality_to(b)
-
-print "\n Cross"
-v = Vector1([8.462,7.893,-8.187])
-w = Vector1([6.984,-5.975,4.778])
-print v.cross(w)
-
-print "\n#1"
-v = Vector1([-8.987,-9.838,5.031])
-w = Vector1([-4.268,-1.861,-8.866])
-print v.cross(w).magnitude()
-
-print "\n#2"
-v = Vector1([1.5,9.547,3.691])
-w = Vector1([-6.007,0.124,5.772])
-print v.cross(w).magnitude()*Decimal(0.5)
+# print "\n Cross"
+# v = Vector([8.462,7.893,-8.187])
+# w = Vector([6.984,-5.975,4.778])
+# print v.cross(w)
+#
+# print "\n#1"
+# v = Vector([-8.987,-9.838,5.031])
+# w = Vector([-4.268,-1.861,-8.866])
+# print v.cross(w).magnitude()
+#
+# print "\n#2"
+# v = Vector([1.5,9.547,3.691])
+# w = Vector([-6.007,0.124,5.772])
+# print v.cross(w).magnitude()*Decimal(0.5)
