@@ -51,6 +51,7 @@ class LinearSystem(object):
         indices = [-1] * num_equations
 
         for i,p in enumerate(self.planes):
+
             try:
                 indices[i] = p.first_nonzero_index(p.normal_vector)
             except Exception as e:
