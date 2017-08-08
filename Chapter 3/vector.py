@@ -73,7 +73,10 @@ class Vector:
         try:
             u1 = self.normalized()
             u2 = v.normalized()
-            angel_with = math.acos(u1.dot(u2))
+            d = u1.dot(u2)
+            if d - 1 <= 1e-10:
+                d = 1
+            angel_with = math.acos(d)
             if in_degree:
                 return angel_with * 180. / math.pi
             else:

@@ -27,15 +27,21 @@ class LinearSystem(object):
 
 
     def swap_rows(self, row1, row2):
-        pass # add your code here
+        self.planes[row1], self.planes[row2] = self.planes[row2], self.planes[row1]
 
 
     def multiply_coefficient_and_row(self, coefficient, row):
-        pass # add your code here
+        v = self.planes[row].normal_vector.time_scalar(coefficient)
+        constant_term = self.planes[row].constant_term * Decimal(coefficient)
+
+        self.planes[row] = Plane(v, constant_term)
 
 
     def add_multiple_times_row_to_row(self, coefficient, row_to_add, row_to_be_added_to):
-        pass # add your code here
+        v_original = self.planes[row_to_add].normal_vector.time_scalar(coefficient)
+        v = self.planes[row_to_be_added_to].normal_vector.plus(v_original)
+        constant_term = self.planes[row_to_add].constant_term * Decimal(coefficient) + self.planes[row_to_be_added_to].constant_term
+        self.planes[row_to_be_added_to] = Plane(v,constant_term)
 
 
     def indices_of_first_nonzero_terms_in_each_row(self):
@@ -54,6 +60,38 @@ class LinearSystem(object):
                     raise e
 
         return indices
+
+    def compute_triangular_form(self):
+        system = deepcopy(self)
+        row = 0
+        var_index = 0
+        while row < len(system) - 1:
+            if system.planes[row].normal_vector[var_index] == 0:
+                n = system.find_first_nozero_to_swap(var_index,row)
+                if not n == -1:
+                    print '\nStart Swap: from {} to {}'.format(n,row)
+                    system.swap_rows(row,n)
+                else:
+                    var_index += 1
+                    continue
+            k = row + 1
+            while k < len(system):
+                scalar = - system.planes[k].normal_vector[var_index] / system.planes[row].normal_vector[var_index]
+                system.add_multiple_times_row_to_row(scalar,row,k)
+                k += 1
+            if var_index < system.dimension - 1:
+                var_index += 1
+            row += 1
+        return system
+
+    def find_first_nozero_to_swap(self, vector_dim,plane_index):
+        index = plane_index + 1
+        while index < len(self):
+            if not self[index].normal_vector[vector_dim] == 0:
+                return index
+            index += 1
+        else:
+            return -1
 
 
     def __len__(self):
@@ -85,20 +123,127 @@ class MyDecimal(Decimal):
         return abs(self) < eps
 
 
-p0 = Plane(normal_vector=Vector(['1','1','1']), constant_term='1')
-p1 = Plane(normal_vector=Vector(['0','1','0']), constant_term='2')
-p2 = Plane(normal_vector=Vector(['1','1','-1']), constant_term='3')
-p3 = Plane(normal_vector=Vector(['1','0','-2']), constant_term='2')
+# p0 = Plane(normal_vector=Vector(['1','1','1']), constant_term='1')
+# p1 = Plane(normal_vector=Vector(['0','1','0']), constant_term='2')
+# p2 = Plane(normal_vector=Vector(['1','1','-1']), constant_term='3')
+# p3 = Plane(normal_vector=Vector(['1','0','-2']), constant_term='2')
+#
+#
+# s = LinearSystem([p0,p1,p2,p3])
+# s.swap_rows(0,1)
+# if not (s[0] == p1 and s[1] == p0 and s[2] == p2 and s[3] == p3):
+#     print 'test case 1 failed'
+#
+# s.swap_rows(1,3)
+# if not (s[0] == p1 and s[1] == p3 and s[2] == p2 and s[3] == p0):
+#     print 'test case 2 failed'
+#
+# s.swap_rows(3,1)
+# if not (s[0] == p1 and s[1] == p0 and s[2] == p2 and s[3] == p3):
+#     print 'test case 3 failed'
+#
+# s.multiply_coefficient_and_row(1,0)
+# if not (s[0] == p1 and s[1] == p0 and s[2] == p2 and s[3] == p3):
+#     print 'test case 4 failed'
+#
+# s.multiply_coefficient_and_row(-1,2)
+# if not (s[0] == p1 and
+#         s[1] == p0 and
+#         s[2] == Plane(normal_vector=Vector(['-1','-1','1']), constant_term='-3') and
+#         s[3] == p3):
+#     print 'test case 5 failed'
+#
+# s.multiply_coefficient_and_row(10,1)
+# if not (s[0] == p1 and
+#         s[1] == Plane(normal_vector=Vector(['10','10','10']), constant_term='10') and
+#         s[2] == Plane(normal_vector=Vector(['-1','-1','1']), constant_term='-3') and
+#         s[3] == p3):
+#     print 'test case 6 failed'
+# s.add_multiple_times_row_to_row(0,0,1)
+# if not (s[0] == p1 and
+#         s[1] == Plane(normal_vector=Vector(['10','10','10']), constant_term='10') and
+#         s[2] == Plane(normal_vector=Vector(['-1','-1','1']), constant_term='-3') and
+#         s[3] == p3):
+#     print 'test case 7 failed'
+#
+# s.add_multiple_times_row_to_row(1,0,1)
+# if not (s[0] == p1 and
+#         s[1] == Plane(normal_vector=Vector(['10','11','10']), constant_term='12') and
+#         s[2] == Plane(normal_vector=Vector(['-1','-1','1']), constant_term='-3') and
+#         s[3] == p3):
+#     print 'test case 8 failed'
+#
+# s.add_multiple_times_row_to_row(-1,1,0)
+# if not (s[0] == Plane(normal_vector=Vector(['-10','-10','-10']), constant_term='-10') and
+#         s[1] == Plane(normal_vector=Vector(['10','11','10']), constant_term='12') and
+#         s[2] == Plane(normal_vector=Vector(['-1','-1','1']), constant_term='-3') and
+#         s[3] == p3):
+#     print 'test case 9 failed'
+# print 'All test passed'
+#
+print '\n Start Testing Triangular Form'
 
-s = LinearSystem([p0,p1,p2,p3])
+p1 = Plane(normal_vector=Vector(['1','1','1']), constant_term='1')
+p2 = Plane(normal_vector=Vector(['0','1','1']), constant_term='2')
+s = LinearSystem([p1,p2])
+t = s.compute_triangular_form()
+print '\nCase #1'
+for each in t.planes:
+    print each.normal_vector
+    print 'constant_term:',each.constant_term
+if not (t[0] == p1 and
+        t[1] == p2):
+    print 'test case 1 failed'
 
-print s.indices_of_first_nonzero_terms_in_each_row()
-print '{},{},{},{}'.format(s[0],s[1],s[2],s[3])
-print len(s)
-print s
+p1 = Plane(normal_vector=Vector(['1','1','1']), constant_term='1')
+p2 = Plane(normal_vector=Vector(['1','1','1']), constant_term='2')
+s = LinearSystem([p1,p2])
+t = s.compute_triangular_form()
+print '\nCase #2'
+for each in t.planes:
+    print each.normal_vector
+    print 'constant_term:',each.constant_term
+if not (t[0] == p1 and
+        t[1] == Plane(constant_term='1')):
+    print 'test case 2 failed'
 
-s[0] = p1
-print s
+p1 = Plane(normal_vector=Vector(['1','1','1']), constant_term='1')
+p2 = Plane(normal_vector=Vector(['0','1','0']), constant_term='2')
+p3 = Plane(normal_vector=Vector(['1','1','-1']), constant_term='3')
+p4 = Plane(normal_vector=Vector(['1','0','-2']), constant_term='2')
+s = LinearSystem([p1,p2,p3,p4])
+t = s.compute_triangular_form()
+print '\nCase #3'
+for each in t.planes:
+    print each.normal_vector
+    print 'constant_term:',each.constant_term
+if not (t[0] == p1 and
+        t[1] == p2 and
+        t[2] == Plane(normal_vector=Vector(['0','0','-2']), constant_term='2') and
+        t[3] == Plane()):
+    print 'test case 3 failed'
 
-print MyDecimal('1e-9').is_near_zero()
-print MyDecimal('1e-11').is_near_zero()
+p1 = Plane(normal_vector=Vector(['0','1','1']), constant_term='1')
+p2 = Plane(normal_vector=Vector(['1','-1','1']), constant_term='2')
+p3 = Plane(normal_vector=Vector(['1','2','-5']), constant_term='3')
+s = LinearSystem([p1,p2,p3])
+t = s.compute_triangular_form()
+print '\nCase #4'
+for each in t.planes:
+    print each.normal_vector
+    print 'constant_term:',each.constant_term
+if not (t[0] == Plane(normal_vector=Vector(['1','-1','1']), constant_term='2') and
+        t[1] == Plane(normal_vector=Vector(['0','1','1']), constant_term='1') and
+        t[2] == Plane(normal_vector=Vector(['0','0','-9']), constant_term='-2')):
+    print 'test case 4 failed'
+
+# print s.indices_of_first_nonzero_terms_in_each_row()
+# print '{},{},{},{}'.format(s[0],s[1],s[2],s[3])
+# print len(s)
+# print s
+#
+# s[0] = p1
+# print s
+#
+# print MyDecimal('1e-9').is_near_zero()
+# print MyDecimal('1e-11').is_near_zero()

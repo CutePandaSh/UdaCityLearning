@@ -37,6 +37,7 @@ class Plane(object):
             self.basepoint = Vector(basepoint_coords)
 
         except Exception as e:
+            print e
             if str(e) == Plane.NO_NONZERO_ELTS_FOUND_MSG:
                 self.basepoint = None
             else:
@@ -92,11 +93,20 @@ class Plane(object):
         return self.normal_vector.is_parallel_to(p2.normal_vector)
 
     def __eq__(self, other):
-        if not self.is_parallel_to(other):
-            return False
+        if self.normal_vector.is_zero_vector():
+            if other.normal_vector.is_zero_vector():
+                return True
+            else:
+                return False
         else:
-            v = self.basepoint.minus(other.basepoint)
-            return self.normal_vector.is_orthogonal_to(v)
+            if other.normal_vector.is_zero_vector():
+                return False
+            else:
+                if not self.is_parallel_to(other):
+                    return False
+                else:
+                    v = self.basepoint.minus(other.basepoint)
+                    return self.normal_vector.is_orthogonal_to(v)
 
 
     @staticmethod
