@@ -4,6 +4,8 @@ from decimal import Decimal,getcontext
 getcontext().prec = 30
 
 
+
+
 class Vector:
     TOLERANCE=1e-10
 
