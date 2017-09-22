@@ -37,7 +37,6 @@ class Plane(object):
             self.basepoint = Vector(basepoint_coords)
 
         except Exception as e:
-            print e
             if str(e) == Plane.NO_NONZERO_ELTS_FOUND_MSG:
                 self.basepoint = None
             else:
@@ -111,6 +110,12 @@ class Plane(object):
 
     @staticmethod
     def first_nonzero_index(iterable):
+        # i = 0
+        # while i < len(iterable.coordination):
+        #     if not MyDecimal(iterable.coordination[i]).is_near_zero():
+        #         return i
+        #     i += 1
+        iterable.start = 0
         for k, item in enumerate(iterable):
             if not MyDecimal(item).is_near_zero():
                 return k

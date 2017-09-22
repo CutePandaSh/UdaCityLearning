@@ -138,6 +138,8 @@ class Vector:
         return u
 
 
+
+
 # print "\n Cross"
 # v = Vector([8.462,7.893,-8.187])
 # w = Vector([6.984,-5.975,4.778])

@@ -138,6 +138,7 @@ class LinearSystem(object):
     def __str__(self):
         ret = 'Linear System:\n'
         temp = ['Equation {}: {}'.format(i+1,p) for i,p in enumerate(self.planes)]
+
         ret += '\n'.join(temp)
         return ret
 
