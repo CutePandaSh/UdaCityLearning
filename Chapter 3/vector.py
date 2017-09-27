@@ -22,7 +22,7 @@ class Vector:
             raise ValueError("Coordination must be nonempty")
 
     def __str__(self):
-        return "Vector: {}".format(self.coordination)
+        return "Vector: {}".format([round(i,3) for i in self.coordination])
 
     def __eq__(self, other):
         return self.coordination == other.coordination

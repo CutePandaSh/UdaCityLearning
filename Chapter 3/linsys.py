@@ -117,6 +117,18 @@ class LinearSystem(object):
         print triangel_system
         return triangel_system
 
+    def compute_solution(self):
+        try:
+            return self.do_gaussion_elimination_and_extract_solution()
+        except Exception as e:
+            if (str(e) == self.NO_SOLUTIONS_MSG or str(e) == self.INF_SOLUTIONS_MSG):
+                return str(e)
+            else:
+                raise e
+
+    def do_gaussion_elimination_and_extract_solution(self):
+        reff = self.compute_rref()
+
     def cacl_result(self):
         triagel_system = self.compute_rref()
         result = ["#"]
@@ -124,11 +136,10 @@ class LinearSystem(object):
         for k, p in enumerate(triagel_system.planes):
             if p.normal_vector.is_zero_vector():
                 constant = MyDecimal(p.constant_term)
-                print constant
                 if constant.is_near_zero():
                     continue
                 else:
-                    raise Exception("no result1")
+                    raise Exception(self.NO_SOLUTIONS_MSG)
             not_zero_count = 0
             not_zero_index = -1
             for i,v in enumerate(p.normal_vector.coordination):
@@ -140,13 +151,13 @@ class LinearSystem(object):
             else:
 
                 if result[not_zero_index] != "#":
-                    raise Exception("no result2")
+                    raise Exception(self.NO_SOLUTIONS_MSG)
                 else:
                     result[not_zero_index] = p.constant_term /  p.normal_vector[not_zero_index]
         if "#" in result:
-            raise Exception("unlimit result3")
+            raise Exception(self.INF_SOLUTIONS_MSG)
         else:
-            return result
+            return Vector(result)
 
 
 
